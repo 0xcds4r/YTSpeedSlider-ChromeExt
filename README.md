@@ -1,7 +1,6 @@
 # YTSpeedSlider-ChromeExt
 
-<img width="715" height="56" alt="image" src="https://github.com/user-attachments/assets/08dae0ca-4290-477e-9e56-eceb01d7d319" />
-
+<img width="730" height="58" alt="image" src="https://github.com/user-attachments/assets/348f1971-5f4a-4f2c-bbca-53a5f1aea9ab" />
 
 
 Adds a smooth speed slider to YouTube's button row (max - 15x)
