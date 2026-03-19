@@ -26,7 +26,7 @@
 				background: rgba(255,255,255,0.1);
 				backdrop-filter: blur(8px);
 				-webkit-backdrop-filter: blur(8px);
-				border: 1px solid rgba(255,255,255,0.15);
+				border: 0px solid rgba(255,255,255,0.15);
 				font-family: 'Roboto Mono', 'Courier New', monospace;
 				cursor: default;
 				user-select: none;
@@ -81,9 +81,9 @@
 				box-shadow: 0 0 0 2px rgba(255,100,0,0.5);
 				pointer-events: none;
 				transition: box-shadow 0.15s ease, transform 0.15s ease;
-				}
+			}
 
-				#yt-speed-track:hover #yt-speed-thumb {
+			#yt-speed-track:hover #yt-speed-thumb {
 				box-shadow: 0 0 0 4px rgba(255,100,0,0.4);
 				transform: translate(-50%, -50%) scale(1.2);
 			}
