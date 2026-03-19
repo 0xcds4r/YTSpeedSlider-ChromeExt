@@ -240,7 +240,7 @@
 			return;
 		}
 
-		const container = document.getElementById('top-level-buttons-computed');
+		const container = document.getElementById('actions');
 		if (!container) {
 			return;
 		}
