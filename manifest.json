@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "YT Speed Slider",
+  "version": "1.0",
+  "description": "Adds a smooth speed slider to YouTube's button row",
+  "permissions": ["scripting", "activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+}
