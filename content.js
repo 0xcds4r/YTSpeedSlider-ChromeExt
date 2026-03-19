@@ -2,6 +2,8 @@
 	const STYLE_ID = 'yt-speed-slider-style';
 	const WIDGET_ID = 'yt-speed-slider-widget';
 	const DEFAULT_SPEED = 1.0;
+	const MIN_SPEED = 0.1;
+	const MAX_SPEED = 15.8;
 
 	function injectStyles() 
 	{
@@ -164,7 +166,7 @@
 			video.playbackRate = speed;
 		}
 
-		const pct = ((speed - 1.0) / (15.0 - 1.0)) * 100;
+		const pct = ((speed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)) * 100;
 		widget.querySelector('#yt-speed-fill').style.width = pct + '%';
 		widget.querySelector('#yt-speed-thumb').style.left = pct + '%';
 
@@ -185,8 +187,8 @@
 			const rect = track.getBoundingClientRect();
 			const clientX = e.touches ? e.touches[0].clientX : e.clientX;
 			const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-			const raw = 1.0 + pct * (15.0 - 1.0);
-			return Math.round(raw * 4) / 4;
+			const raw = MIN_SPEED + pct * (MAX_SPEED - MIN_SPEED);
+			return Math.round(raw * 10) / 10;
 		}
 
 		track.addEventListener('mousedown', (e) => 
@@ -218,8 +220,9 @@
 		widget.addEventListener('wheel', (e) => 
 		{
 			e.preventDefault();
-			const delta = e.deltaY < 0 ? 0.25 : -0.25;
-			speed = Math.max(1.0, Math.min(15.0, speed + delta));
+			const delta = e.deltaY < 0 ? 0.1 : -0.1;
+			speed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, speed + delta));
+			speed = Math.round(speed * 10) / 10;
 			setSpeed(speed, widget);
 		}, { passive: false });
 
@@ -254,7 +257,7 @@
 		if (video) 
 		{
 			video.addEventListener('ratechange', () => {
-				const spd = Math.max(1.0, Math.min(15.0, video.playbackRate));
+				const spd = Math.max(MIN_SPEED, Math.min(MAX_SPEED, video.playbackRate));
 				setSpeed(spd, widget);
 			});
 		}
