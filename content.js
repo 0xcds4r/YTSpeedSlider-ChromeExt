@@ -1,9 +1,13 @@
 (() => {
 	const STYLE_ID = 'yt-speed-slider-style';
 	const WIDGET_ID = 'yt-speed-slider-widget';
+
 	const DEFAULT_SPEED = 1.0;
 	const MIN_SPEED = 0.1;
 	const MAX_SPEED = 15.8;
+	const STEP = 0.1;
+
+	let currentSpeed = DEFAULT_SPEED;
 
 	function injectStyles() 
 	{
@@ -128,6 +132,31 @@
 				height: 11px;
 				fill: #fff;
 			}
+
+			#yt-speed-keyhint {
+				position: fixed;
+				bottom: 72px;
+				left: 50%;
+				transform: translateX(-50%) translateY(6px);
+				background: rgba(0,0,0,0.82);
+				color: #fff;
+				font-family: 'Roboto Mono', 'Courier New', monospace;
+				font-size: 13px;
+				font-weight: 600;
+				padding: 6px 14px;
+				border-radius: 8px;
+				pointer-events: none;
+				opacity: 0;
+				transition: opacity 0.15s ease, transform 0.15s ease;
+				z-index: 99999;
+				white-space: nowrap;
+				letter-spacing: 0.5px;
+			}
+
+			#yt-speed-keyhint.visible {
+				opacity: 1;
+				transform: translateX(-50%) translateY(0);
+			}
 		`;
 
 		document.head.appendChild(style);
@@ -145,7 +174,7 @@
 			<div id="yt-speed-thumb"></div>
 			</div>
 			<span id="yt-speed-label">1.0×</span>
-			<div id="yt-speed-reset" title="Reset to 1×">
+			<div id="yt-speed-reset" title="Reset to 1× (N)">
 			<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 				<path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
 			</svg>
@@ -161,6 +190,8 @@
 
 	function setSpeed(speed, widget)
 	{
+		currentSpeed = speed;
+
 		const video = getVideo();
 		if (video) {
 			video.playbackRate = speed;
@@ -175,11 +206,32 @@
 		label.classList.toggle('boosted', speed > 1.5);
 	}
 
-	function attachDrag(widget, currentSpeed)
+	let keyhintTimeout = null;
+
+	function showKeyHint(text)
+	{
+		let hint = document.getElementById('yt-speed-keyhint');
+
+		if (!hint) {
+			hint = document.createElement('div');
+			hint.id = 'yt-speed-keyhint';
+			document.body.appendChild(hint);
+		}
+
+		hint.textContent = text;
+		hint.classList.add('visible');
+
+		clearTimeout(keyhintTimeout);
+
+		keyhintTimeout = setTimeout(() => {
+			hint.classList.remove('visible');
+		}, 900);
+	}
+
+	function attachDrag(widget)
 	{
 		const track = widget.querySelector('#yt-speed-track');
 		const reset = widget.querySelector('#yt-speed-reset');
-		let speed = currentSpeed;
 		let dragging = false;
 
 		function speedFromEvent(e) 
@@ -188,14 +240,14 @@
 			const clientX = e.touches ? e.touches[0].clientX : e.clientX;
 			const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
 			const raw = MIN_SPEED + pct * (MAX_SPEED - MIN_SPEED);
+
 			return Math.round(raw * 10) / 10;
 		}
 
 		track.addEventListener('mousedown', (e) => 
 		{
 			dragging = true;
-			speed = speedFromEvent(e);
-			setSpeed(speed, widget);
+			setSpeed(speedFromEvent(e), widget);
 			e.preventDefault();
 		});
 
@@ -205,34 +257,67 @@
 				return;
 			}
 
-			speed = speedFromEvent(e);
-			setSpeed(speed, widget);
+			setSpeed(speedFromEvent(e), widget);
 		});
 
 		document.addEventListener('mouseup', () => { dragging = false; });
 
 		track.addEventListener('click', (e) => 
 		{
-			speed = speedFromEvent(e);
-			setSpeed(speed, widget);
+			setSpeed(speedFromEvent(e), widget);
 		});
 
 		widget.addEventListener('wheel', (e) => 
 		{
 			e.preventDefault();
-			const delta = e.deltaY < 0 ? 0.1 : -0.1;
-			speed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, speed + delta));
-			speed = Math.round(speed * 10) / 10;
+			const delta = e.deltaY < 0 ? STEP : -STEP;
+			const speed = Math.round(Math.max(MIN_SPEED, Math.min(MAX_SPEED, currentSpeed + delta)) * 10) / 10;
 			setSpeed(speed, widget);
 		}, { passive: false });
 
 		reset.addEventListener('click', (e) => 
 		{
 			e.stopPropagation();
-			speed = DEFAULT_SPEED;
-			setSpeed(speed, widget);
+			setSpeed(DEFAULT_SPEED, widget);
 		});
-  	}
+	}
+
+	function attachKeyboard(widget)
+	{
+		if (window._ytSpeedKeyHandler) {
+			document.removeEventListener('keydown', window._ytSpeedKeyHandler, true);
+		}
+
+		window._ytSpeedKeyHandler = (e) =>
+		{
+			const tag = document.activeElement && document.activeElement.tagName;
+			if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement.isContentEditable) {
+				return;
+			}
+
+			const key = e.key.toUpperCase();
+
+			if (key === 'B') 
+				{
+				const speed = Math.round(Math.min(MAX_SPEED, currentSpeed + STEP) * 10) / 10;
+				setSpeed(speed, widget);
+				showKeyHint('⚡ ' + speed.toFixed(1) + '×');
+			} 
+			else if (key === 'H') 
+			{
+				const speed = Math.round(Math.max(MIN_SPEED, currentSpeed - STEP) * 10) / 10;
+				setSpeed(speed, widget);
+				showKeyHint('⚡ ' + speed.toFixed(1) + '×');
+			} 
+			else if (key === 'N') 
+			{
+				setSpeed(DEFAULT_SPEED, widget);
+				showKeyHint('⚡ Reset 1.0×');
+			}
+		};
+
+		document.addEventListener('keydown', window._ytSpeedKeyHandler, true);
+	}
 
 	function inject() 
 	{
@@ -241,6 +326,7 @@
 		}
 
 		const container = document.getElementById('actions');
+
 		if (!container) {
 			return;
 		}
@@ -251,14 +337,18 @@
 		container.appendChild(widget);
 
 		setSpeed(DEFAULT_SPEED, widget);
-		attachDrag(widget, DEFAULT_SPEED);
+		attachDrag(widget);
+		attachKeyboard(widget);
 
 		const video = getVideo();
+
 		if (video) 
 		{
 			video.addEventListener('ratechange', () => {
 				const spd = Math.max(MIN_SPEED, Math.min(MAX_SPEED, video.playbackRate));
-				setSpeed(spd, widget);
+				if (Math.abs(spd - currentSpeed) > 0.05) {
+					setSpeed(spd, widget);
+				}
 			});
 		}
 	}
@@ -270,5 +360,6 @@
 	});
 
 	observer.observe(document.body, { childList: true, subtree: true });
+	
 	inject();
 })();
