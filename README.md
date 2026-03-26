@@ -13,3 +13,7 @@ Install:
 4. Select folder with extension files
 5. Enable extension (if not enabled)
 6. Done!
+
+HotKeys:
+
+B - increase. H - decrease. N - reset speed.
