@@ -1,6 +1,6 @@
 # YTSpeedSlider-ChromeExt
 
-<img width="638" height="69" alt="image" src="https://github.com/user-attachments/assets/276b84fa-435b-4de0-bb1f-30fb8b5a6e91" />
+![spchy](https://github.com/user-attachments/assets/5da222c0-1e80-46ce-9286-8f8ec5741f23)
 
 ![setsytss](https://github.com/user-attachments/assets/7c11f3f0-07d3-4ef5-b0c0-6a1a4a694623)
 
